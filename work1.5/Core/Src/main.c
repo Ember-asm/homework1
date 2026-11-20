@@ -43,9 +43,10 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-volatile uint16_t last_time = 0, current_time;
+volatile uint32_t last_time = 0, current_time;
 volatile uint32_t key_long_pressed_times= 0;
 volatile uint8_t led_state = 0;
+volatile uint8_t last_pressed_time = 0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -60,9 +61,15 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
     if (GPIO_Pin == KEY_Pin)
     {
+        volatile uint32_t current_pressed_time = HAL_GetTick();
+        if (current_pressed_time - last_pressed_time < 20)
+        {
+            return;
+        }
+        last_pressed_time = current_pressed_time;
         if (HAL_GPIO_ReadPin(KEY_GPIO_Port, KEY_Pin) == GPIO_PIN_RESET) //按下
         {
-            last_time = HAL_GetTick();
+            last_time = current_pressed_time;
         }
         else if (HAL_GPIO_ReadPin(KEY_GPIO_Port, KEY_Pin) == GPIO_PIN_SET) //松开
         {
